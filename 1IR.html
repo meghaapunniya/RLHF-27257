@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Yoga Pose Widget</title>
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .pose-card {
+        margin: 10px;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        text-align: center;
+      }
+      #poseDetail {
+        display: none;
+        text-align: center;
+        margin-bottom: 20px; /* Ensures spacing between pose detail and other sections */
+      }
+      .video-container {
+        position: relative;
+        padding-bottom: 56.25%;
+        height: 0;
+        overflow: hidden;
+        margin: 20px 0;
+      }
+      .video-container iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .pose-navigation {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 20px 0;
+      }
+      .pose-navigation button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      .pose-navigation button:disabled {
+        background-color: #ccc;
+      }
+      #sequenceList {
+        min-height: 200px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-bottom: 20px; /* Ensures spacing between sequence list and other sections */
+      }
+      .drag-item {
+        cursor: move;
+        margin-bottom: 10px;
+      }
+      #totalPracticeTime {
+        margin-top: 20px;
+      }
+      #timerInputs {
+        margin-bottom: 20px;
+      }
+      .timer-input {
+        margin-right: 10px;
+        width: 80px;
+      }
+      .btn-timer {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      .btn-timer:disabled {
+        background-color: #ccc;
+      }
+      .remove-btn {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 5px;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      .remove-btn:hover {
+        background-color: #c82333;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <a class="navbar-brand" href="#">Yoga Widget</a>
+    </nav>
+
+    <div class="container mt-4">
+      <div id="poseLibrary" class="text-center"></div>
+
+      <div id="poseDetail"></div>
+
+      <div id="timerInputs">
+        <h3>Set Timers</h3>
+        <label for="poseTimer">Pose Duration (sec):</label>
+        <input
+          id="poseTimer"
+          class="timer-input"
+          type="number"
+          min="1"
+          value="60"
+        />
+        <button id="setPoseTimer" class="btn btn-timer">
+          Set Timer for Pose
+        </button>
+      </div>
+
+      <div id="sequenceBuilder">
+        <h3>Build Your Sequence</h3>
+        <ul id="sequenceList" class="list-group"></ul>
+        <button id="saveSequence" class="btn btn-success">Save Sequence</button>
+      </div>
+
+      <div id="totalPracticeTime">
+        <h3>Total Practice Time</h3>
+        <p id="practiceTime">0 minutes 0 seconds</p>
+        <button id="startPractice" class="btn btn-timer">Start Practice</button>
+        <button id="stopPractice" class="btn btn-timer" disabled>
+          Stop Practice
+        </button>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+    <script>
+      // Expanded list of poses
+      let poses = [
+        {
+          name: 'Mountain Pose',
+          difficulty: 'Beginner',
+          type: 'Standing',
+          videoUrl: 'https://youtu.be/ATLU-XX_lro?si=d5FVsmdAe63xVOLk',
+          instructions:
+            'Stand tall with feet together, shoulders back, and arms at your sides.',
+        },
+        {
+          name: 'Downward Dog',
+          difficulty: 'Beginner',
+          type: 'Standing',
+          videoUrl: 'https://youtu.be/ayQoxw8sRTk?si=dMfeNqJSiHX_Ja2f',
+          instructions:
+            'Start on your hands and knees, lift your hips, and straighten your legs to form an inverted V shape.',
+        },
+        {
+          name: 'Warrior I',
+          difficulty: 'Intermediate',
+          type: 'Standing',
+          videoUrl: 'https://youtu.be/NytDpa2r34g?si=q8t34nUNz-Gg00M0',
+          instructions:
+            'Step one foot forward, bend the front knee, and extend the back leg while raising your arms overhead.',
+        },
+        {
+          name: 'Warrior II',
+          difficulty: 'Intermediate',
+          type: 'Standing',
+          videoUrl: 'https://youtu.be/Mn6RSIRCV3w?si=01wpcFJ_3oqPSA5N',
+          instructions:
+            'Step one foot forward, bend the front knee, and extend the back leg with arms extended out to the sides.',
+        },
+        {
+          name: 'Tree Pose',
+          difficulty: 'Intermediate',
+          type: 'Balancing',
+          videoUrl: 'https://youtu.be/wdln9qWYloU?si=-Np7kVaA_V49j6GK',
+          instructions:
+            'Stand on one leg, place the other foot on the inner thigh or calf of the standing leg, and bring your hands together above your head.',
+        },
+        {
+          name: 'Bridge Pose',
+          difficulty: 'Beginner',
+          type: 'Backbend',
+          videoUrl: 'https://youtu.be/XUcAuYd7VU0?si=hhG7Rs8aUPAgXWTG',
+          instructions:
+            'Lie on your back, bend your knees, place your feet flat on the floor, and lift your hips towards the ceiling.',
+        },
+        {
+          name: 'Cobra Pose',
+          difficulty: 'Beginner',
+          type: 'Backbend',
+          videoUrl: 'https://youtu.be/JDcdhTuycOI?si=MctosSxsWG7qHEhV',
+          instructions:
+            'Lie on your stomach, place your hands under your shoulders, and lift your chest while keeping your elbows close to your body.',
+        },
+        {
+          name: "Child's Pose",
+          difficulty: 'Beginner',
+          type: 'Restorative',
+          videoUrl: 'https://youtu.be/nMp3MlTz9fA?si=FFYzoIFpmyes3RDJ',
+          instructions:
+            'Kneel on the floor, sit back on your heels, and stretch your arms forward on the ground, lowering your forehead to the mat.',
+        },
+        {
+          name: 'Plank Pose',
+          difficulty: 'Intermediate',
+          type: 'Core',
+          videoUrl: 'https://youtu.be/pvIjsG5Svck?si=osWC-c5mzLDlECK7',
+          instructions:
+            'Start in a push-up position with your body in a straight line from head to heels, engaging your core.',
+        },
+        {
+          name: 'Seated Forward Bend',
+          difficulty: 'Beginner',
+          type: 'Stretching',
+          videoUrl: 'https://youtu.be/_eWWLp3Dc_I?si=wH0LO33xa3ReSP3t',
+          instructions:
+            'Sit with your legs extended straight in front of you, reach forward towards your toes, and lengthen your spine.',
+        },
+        {
+          name: 'Pigeon Pose',
+          difficulty: 'Intermediate',
+          type: 'Hip Opener',
+          videoUrl: 'https://youtu.be/M1gEGLtF1p0?si=Ku3RVAWPQSRY8o4D',
+          instructions:
+            'From a tabletop position, bring one knee forward and extend the other leg back, lowering your hips towards the ground.',
+        },
+        {
+          name: 'Boat Pose',
+          difficulty: 'Intermediate',
+          type: 'Core',
+          videoUrl: 'https://youtu.be/QVEINjrYUPU?si=HyMoSao-MbuSqoCG',
+          instructions:
+            'Sit with your knees bent, lift your feet off the ground, and extend your legs while leaning back slightly.',
+        },
+        {
+          name: 'Shoulder Stand',
+          difficulty: 'Advanced',
+          type: 'Inversion',
+          videoUrl: 'https://youtu.be/SOHsI7XI0mg?si=UvcqFzkm2mjgCs4n',
+          instructions:
+            'Lie on your back, lift your legs overhead, and support your lower back with your hands while keeping your legs extended.',
+        },
+        {
+          name: 'Headstand',
+          difficulty: 'Advanced',
+          type: 'Inversion',
+          videoUrl: 'https://youtu.be/V1HbXt5ZRlg?si=3QLuLr6-gyjyB4kA',
+          instructions:
+            'Start in a kneeling position, place the crown of your head on the ground, interlace your fingers behind your head, and lift your legs up.',
+        },
+      ];
+
+      // Store current pose index
+      let currentPoseIndex = 0;
+      let poseTimers = JSON.parse(localStorage.getItem('poseTimers')) || {};
+      let totalPracticeDuration = 0;
+      let practiceInterval;
+
+      // Store sequence in localStorage
+      let sequence = localStorage.getItem('sequence')
+        ? JSON.parse(localStorage.getItem('sequence'))
+        : [];
+
+      // Function to show pose details
+      function showPose(index) {
+        let pose = poses[index];
+        let videoId = pose.videoUrl.split('/').pop().split('?')[0];
+
+        $('#poseName').text(pose.name);
+        $('#poseVideo').attr('src', `https://www.youtube.com/embed/${videoId}`);
+        $('#poseInstructions').text(pose.instructions);
+        $('#poseDetail').show();
+        currentPoseIndex = index;
+
+        // Update navigation buttons
+        $('#prevPose').prop('disabled', index === 0);
+        $('#nextPose').prop('disabled', index === poses.length - 1);
+      }
+
+      // Function to build the pose library UI
+      function buildPoseLibrary() {
+        let poseLibrary = $('#poseLibrary');
+        poseLibrary.html(''); // Clear existing content
+
+        let poseCard = $('<div>').addClass('pose-card').html(`
+          <h5 class="card-title" id="poseName"> </h5>
+          <div class="video-container">
+            <iframe id="poseVideo" width="560" height="315" src="" frameborder="0" allowfullscreen></iframe>
+        </div>
+        <p id="poseInstructions"></p>
+        <div class="pose-navigation">
+            <button id="prevPose" class="btn">Previous</button>
+            <button id="nextPose" class="btn">Next</button>
+        </div>
+        <button id="startTimer" class="btn btn-primary">Start Pose Timer</button>
+        <button id="addToSequence" class="btn btn-secondary">Add to Sequence</button>
+    `);
+        poseLibrary.append(poseCard);
+
+        // Show the first pose initially
+        showPose(0);
+
+        // Event listeners for navigation buttons
+        $('#prevPose').on('click', function () {
+          if (currentPoseIndex > 0) {
+            showPose(currentPoseIndex - 1);
+          }
+        });
+
+        $('#nextPose').on('click', function () {
+          if (currentPoseIndex < poses.length - 1) {
+            showPose(currentPoseIndex + 1);
+          }
+        });
+
+        // Event listener for Add to Sequence button
+        $('#addToSequence').on('click', function () {
+          let pose = poses[currentPoseIndex];
+          if (!sequence.find((p) => p.name === pose.name)) {
+            sequence.push({
+              ...pose,
+              duration: parseInt($('#poseTimer').val(), 10) || 60,
+            });
+            localStorage.setItem('sequence', JSON.stringify(sequence));
+            buildSequenceUI();
+          } else {
+            alert('Pose already in sequence.');
+          }
+        });
+
+        function removeFromSequence(index) {
+          sequence.splice(index, 1);
+          localStorage.setItem('sequence', JSON.stringify(sequence));
+          buildSequenceUI();
+        }
+
+        // Event listener for Start Timer button
+        $('#startTimer').on('click', function () {
+          let duration = 60; // 60 seconds
+          let timer = duration;
+          $('#startTimer').text('Starting...');
+          let interval = setInterval(function () {
+            timer--;
+            $('#startTimer').text(`Time Remaining: ${timer}s`);
+            if (timer <= 0) {
+              clearInterval(interval);
+              $('#startTimer').text('Start Pose Timer');
+            }
+          }, 1000);
+        });
+      }
+
+      function buildSequenceUI() {
+        let sequenceList = $('#sequenceList');
+        sequenceList.html('');
+        sequence.forEach((pose, index) => {
+          let listItem = $('<li>').addClass('list-group-item drag-item').html(`
+              ${pose.name} (${pose.duration}s)
+              <span class="remove-btn" onclick="removeFromSequence(${index})">&times</span>
+            `);
+          sequenceList.append(listItem);
+        });
+        Sortable.create(sequenceList[0], {
+          animation: 150,
+          onEnd: function () {
+            let updatedSequence = [];
+            $('#sequenceList .drag-item').each(function () {
+              let [poseName, poseDuration] = $(this).text().split(' (');
+              poseDuration = parseInt(poseDuration);
+              let pose = poses.find((p) => p.name === poseName);
+              if (pose)
+                updatedSequence.push({ ...pose, duration: poseDuration });
+            });
+            sequence = updatedSequence;
+            localStorage.setItem('sequence', JSON.stringify(sequence));
+            calculateTotalPracticeTime();
+          },
+        });
+        calculateTotalPracticeTime();
+      }
+
+      function calculateTotalPracticeTime() {
+        totalPracticeDuration = sequence.reduce(
+          (total, pose) => total + (pose.duration || 60),
+          0
+        );
+        let minutes = Math.floor(totalPracticeDuration / 60);
+        let seconds = totalPracticeDuration % 60;
+        $('#practiceTime').text(`${minutes} minutes ${seconds} seconds`);
+      }
+
+      function startPracticeSession() {
+        let index = 0;
+        let remainingTime = sequence[index]?.duration || 0;
+        $('#startPractice').prop('disabled', true);
+        $('#stopPractice').prop('disabled', false);
+
+        practiceInterval = setInterval(function () {
+          remainingTime--;
+          $('#totalPracticeTime')
+            .find('p')
+            .text(`Time Remaining: ${remainingTime}s`);
+          if (remainingTime <= 0) {
+            index++;
+            if (index < sequence.length) {
+              remainingTime = sequence[index]?.duration || 0;
+            } else {
+              clearInterval(practiceInterval);
+              $('#totalPracticeTime')
+                .find('p')
+                .text('Practice Session Complete');
+              $('#startPractice').prop('disabled', false);
+              $('#stopPractice').prop('disabled', true);
+            }
+          }
+        }, 1000);
+      }
+
+      function stopPracticeSession() {
+        clearInterval(practiceInterval);
+        $('#totalPracticeTime').find('p').text('Practice Session Stopped');
+        $('#startPractice').prop('disabled', false);
+        $('#stopPractice').prop('disabled', true);
+      }
+
+      $('#setPoseTimer').on('click', function () {
+        let pose = poses[currentPoseIndex];
+        let duration = parseInt($('#poseTimer').val(), 10) || 60;
+        poseTimers[pose.name] = duration;
+        localStorage.setItem('poseTimers', JSON.stringify(poseTimers));
+        alert(`Pose timer set to ${duration} seconds for ${pose.name}.`);
+      });
+
+      $('#startPractice').on('click', startPracticeSession);
+      $('#stopPractice').on('click', stopPracticeSession);
+
+      $('#saveSequence').on('click', function () {
+        // Save sequence to localStorage (already handled in buildSequenceUI onSortEnd)
+        alert('Sequence saved.');
+      });
+
+      $(document).ready(function () {
+        buildPoseLibrary();
+        buildSequenceUI();
+      });
+    </script>
+  </body>
+</html>

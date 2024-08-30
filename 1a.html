@@ -1,0 +1,39 @@
+<!-- Index.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Yoga Pose Widget</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css"
+    />
+    <style>
+      /* Custom CSS for layout and styling */
+    </style>
+  </head>
+  <body>
+    <section class="section">
+      <div class="container">
+        <!-- Navigation -->
+        <nav>...</nav>
+        <!-- Pose Library -->
+        <div id="pose-library">...</div>
+        <!-- Pose Detail View -->
+        <div id="pose-detail" style="display: none">...</div>
+        <!-- Sequence Builder -->
+        <div id="sequence-builder" style="display: none">...</div>
+      </div>
+    </section>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
+
+<!-- script.js -->
+const app = new Vue({ el: '#app', data: { poses: [], selectedPose: null,
+userSequences: [], currentSequence: [] }, methods: { fetchPoses() { // API call
+to fetch yoga poses }, showPoseDetail(pose) { // Show pose details },
+createSequence() { // Initialize sequence creation UI }, saveSequence() { //
+Save user's sequence to database } }, mounted() { this.fetchPoses(); } });

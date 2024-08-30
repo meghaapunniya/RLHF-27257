@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Yoga Pose Widget</title>
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .pose-card {
+        margin: 10px;
+      }
+      #sequenceList {
+        min-height: 200px;
+        border: 1px solid #ccc;
+        padding: 10px;
+      }
+      .video-container {
+        position: relative;
+        padding-bottom: 56.25%;
+        height: 0;
+        overflow: hidden;
+      }
+      .video-container iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <a class="navbar-brand" href="#">Yoga Widget</a>
+    </nav>
+
+    <div class="container mt-4">
+      <!-- Pose Library, Filters, and other UI elements would go here -->
+      <div id="poseLibrary"></div>
+
+      <div id="poseDetail" style="display: none">
+        <h2 id="poseName"></h2>
+        <div class="video-container">
+          <iframe
+            id="poseVideo"
+            width="560"
+            height="315"
+            src=""
+            frameborder="0"
+            allowfullscreen
+          ></iframe>
+        </div>
+        <p id="poseInstructions"></p>
+        <button id="startTimer" class="btn btn-primary">
+          Start Pose Timer
+        </button>
+      </div>
+
+      <div id="sequenceBuilder" style="display: none">
+        <h3>Build Your Sequence</h3>
+        <ul id="sequenceList" class="list-group"></ul>
+        <button id="saveSequence" class="btn btn-success">Save Sequence</button>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+      // Mock database
+      let poses = [
+        {
+          name: 'Mountain Pose',
+          difficulty: 'Beginner',
+          type: 'Standing',
+          videoUrl: 'VIDEO_ID',
+        },
+      ]; // Expand this with actual data
+
+      function showPose(pose) {
+        $('#poseName').text(pose.name);
+        $('#poseVideo').attr(
+          'src',
+          `https://www.youtube.com/embed/${pose.videoUrl}`
+        );
+        $('#poseInstructions').text(pose.instructions);
+        $('#poseDetail').show();
+      }
+
+      function buildSequenceUI() {
+        $('#sequenceList').html(''); // Clear existing list
+        // Here you would populate from user's saved sequences or allow adding new poses
+      }
+
+      $(document).ready(function () {
+        // Populate library, setup event listeners for selecting poses, etc.
+        $('#startTimer').on('click', function () {
+          // Implement timer logic
+        });
+        // Setup sequence builder functionality
+      });
+    </script>
+  </body>
+</html>
